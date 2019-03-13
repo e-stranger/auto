@@ -1,0 +1,5 @@
+data/*
+resources/*
+model/*
+ad_hoc.py
+*.dat
