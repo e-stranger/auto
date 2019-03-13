@@ -1,5 +1,4 @@
 import pickle
-
 import keras
 import numpy
 import numpy as np

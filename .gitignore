@@ -3,3 +3,10 @@ resources/*
 model/*
 ad_hoc.py
 *.dat
+*.csv
+*.pkl
+*.hdf5
+__pycache__/
+.idea/
+github_key
+github_key.pub
