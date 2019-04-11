@@ -17,6 +17,7 @@ from oauth2client import client
 from oauth2client import file as oauthFile
 from oauth2client import tools
 import datetime
+import requests
 
 from mcauto.core.api.base import APIDBBase, DownloadFailedError
 from mcauto.core.database.database import DBClassMixin
@@ -155,7 +156,16 @@ class DoubleclickBidManagerAPI(AdidasGoogleAPI):
 
     def _run(self, *args, **kwargs):
         try:
-            pass
+            result = self.service.queries().listqueries().execute()
+            if len(result['queries']) != 1:
+                raise ValueError('Number of reports different from what was expected')
+
+            url = result['queries'][0]['metadata']['googleCloudStoragePathForLatestReport']
+
+            data = requests.get(url)
+
+            if data.status_code != 200:
+                raise ValueError('Non-200 status code returned')
         except Exception as e:
             raise DownloadFailedError from e
 
