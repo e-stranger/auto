@@ -14,7 +14,7 @@ from keras.utils import Sequence
 from sklearn.model_selection import train_test_split
 
 max_length = 64
-from mcauto.config import train_path
+from mcauto.config.config import train_path
 from concurrent.futures import ThreadPoolExecutor
 
 NLP_GLOBAL = spacy.load('en_core_web_lg')

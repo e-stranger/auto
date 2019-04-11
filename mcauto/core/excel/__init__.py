@@ -1,1 +1,1 @@
-from mcauto.core.excel.excel import autofit_columns
+from mcauto.core.excel.excel import ExcelUtility

@@ -34,21 +34,33 @@ class EmailTemplate():
 
 
 class TriggerTemplate(EmailTemplate):
-    def __init__(self, begin_date, end_date, filepath, emails=analytics_team_emails):
+    def __init__(self, who, begin_date, end_date, filepath):
         super().__init__()
+        if who.lower() == 'social':
+
+            emails = ['john.atherton@mediacom.com']
+            # emails = ['isabel.czarnecki@mediacom.com', 'jasmine.yeejoybland@mediacom.com', 'moses.galvez@mediacom.com']
+            # emails = ['isabel.czarnecki@mediacom.com', 'jasmine.yeejoybland@mediacom.com', 'moses.galvez@mediacom.com', 'AdiSocialPerformance@mediacom.com']
+        elif who.lower() == 'programmatic':
+            emails = ['john.atherton@mediacom.com']
+            # emails = ['isabel.czarnecki@mediacom.com', 'jasmine.yeejoybland@mediacom.com', 'moses.galvez@mediacom.com']
+            # emails = ['isabel.czarnecki@mediacom.com', 'jasmine.yeejoybland@mediacom.com', 'moses.galvez@mediacom.com', 'adidas.MediaCom.programmatic@mediacom.com']
+        else:
+            print('`who` must be either social or programmatic!')
+            raise ValueError
         self.to = "; ".join(emails)
         self.begin_date = begin_date
         self.end_date = end_date
         self.attachments = filepath
-
+        self.who = who
         self.format()
 
     def format(self):
         date_string = '%s-%s-%s / %s-%s-%s' % (
             self.begin_date.month, self.begin_date.day, self.begin_date.year, self.end_date.month, self.end_date.day,
             self.end_date.year)
-        self.subject = f'AUTOMATED: Triggers {date_string}'
-        self.body = f'<p>Hello,\nPlease find attached triggers for {date_string}.</p> <p>Note: this is an automated email - however, you may respond and I will receive it.</p><br><p>Best,</p>'
+        self.subject = f'AUTOMATED: {self.who} Triggers {date_string}'
+        self.body = f'<p>Hello,\nPlease find attached {self.who} triggers for {date_string}.</p> <p>Note: this is an automated email - however, you may respond and I will receive it.</p><p>Best,</p>'
         sig = """<link href="https://fonts.googleapis.com/css?family=Libre+Franklin:700" rel="stylesheet">
 <table>
 <tbody>

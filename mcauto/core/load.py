@@ -1,13 +1,12 @@
 import datetime
-
+from mcauto.core.email.email import TriggerTemplate
 import numpy as np
 import pandas as pd
 import requests
-import win32com.client as win32
 
 import mcauto.core.database
 import mcauto.core.excel
-from mcauto.config import pull_urls
+from mcauto.config.config import pull_urls
 
 PROGRAMMATIC_BENCHMARK = 2
 SOCIAL_BENCHMARK = 2
@@ -30,7 +29,7 @@ DATE_FORMAT = '%Y-%m-%d'
 
 class BaseWeeklyReporting():
     def __init__(self, begin_date=None, end_date=None, last_week=False,
-                 sun_sat_reporting=False):  # date is in format 'YYYY-MM-DD'
+                 sun_sat_reporting=True):  # date is in format 'YYYY-MM-DD'
 
         global DATE_FORMAT
 
@@ -77,20 +76,20 @@ Class which adds SQL Server database access to date formatting class BaseWeeklyR
 
 
 class AdidasWeeklyReporting(BaseWeeklyReporting):
-    def __init__(self, get_database_fn=lambda: mcauto.core.database.create_database(account='Adidas', do_connect=True),
+    def __init__(self, get_database_fn=lambda: mcauto.core.database.database.create_database(account='Adidas', do_connect=True),
                  **kwargs):
-        print(kwargs)
         super().__init__(**kwargs)
         self.get_database_fn = get_database_fn
         self.db = self.get_database_fn()
 
 
-"""
-Class which layers analysis functionality on top of date and database functionality
-"""
+
 
 
 class ADNAnalysis(AdidasWeeklyReporting):
+    """
+    Class which layers analysis functionality on top of date and database functionality
+    """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -165,7 +164,7 @@ class ADNAnalysis(AdidasWeeklyReporting):
         else:
             raise ValueError('Acceptable values of `who` are "Social" and "Programmatic"')
 
-        df['% Spend'] = 100 * df['Weekly Spend'] / df['Weekly Spend'].sum()
+        df['% Spend'] =  df['Weekly Spend'] / df['Weekly Spend'].sum()
         df['ROI'] = (df['Weekly Adj. Revenue'] - df['Weekly Spend']) / df['Weekly Spend']
         df['Overall ROI'] = (df['Overall Adj. Revenue'] - df['Overall Spend']) / df['Overall Spend']
 
@@ -285,38 +284,16 @@ class ADNAnalysis(AdidasWeeklyReporting):
             df_channel.iloc[-1 * n_below:].to_excel(ew, f'{who} Bottom {n_below}', index=False)
             df_channel.iloc[:5].to_excel(ew, f'{who} Top 5', index=False)
 
-        mcauto.core.excel.autofit_columns(save_filepath + '\\' + filename)
+        mcauto.core.excel.ExcelUtility.autofit_columns(save_filepath + '\\' + filename)
+        mcauto.core.excel.ExcelUtility.format_triggers(save_filepath + '\\' + filename, sheetname='Campaign Summary')
+        mcauto.core.excel.ExcelUtility.format_triggers(save_filepath + '\\' + filename, sheetname='Tactic x Site')
 
         return df, save_filepath + '\\' + filename
 
     def flag_save_send(self, who):
-        if who.lower() == 'social':
-
-            emails = ['john.atherton@mediacom.com']
-            # emails = ['isabel.czarnecki@mediacom.com', 'jasmine.yeejoybland@mediacom.com', 'moses.galvez@mediacom.com']
-            # emails = ['isabel.czarnecki@mediacom.com', 'jasmine.yeejoybland@mediacom.com', 'moses.galvez@mediacom.com', 'AdiSocialPerformance@mediacom.com']
-        elif who.lower() == 'programmatic':
-            emails = ['john.atherton@mediacom.com']
-            # emails = ['isabel.czarnecki@mediacom.com', 'jasmine.yeejoybland@mediacom.com', 'moses.galvez@mediacom.com']
-            # emails = ['isabel.czarnecki@mediacom.com', 'jasmine.yeejoybland@mediacom.com', 'moses.galvez@mediacom.com', 'adidas.MediaCom.programmatic@mediacom.com']
-        else:
-            print('`who` must be either social or programmatic!')
-            raise ValueError
-
-        outlook = win32.Dispatch('outlook.application')
-        mail = outlook.CreateItem(0)
-        mail.To = "; ".join(emails)
-        date_string = '%s-%s-%s / %s-%s-%s' % (
-            self.begin_date.month, self.begin_date.day, self.begin_date.year, self.end_date.month, self.end_date.day,
-            self.end_date.year)
-        mail.Subject = f'AUTOMATED: {who} Triggers {date_string}'
-        mail.Body = f'Hello,\nPlease find attached triggers for {who} {date_string}. \nNote: this is an automated email - however, you may respond and I will receive it. \n\nBest,\nJack'
-
         _, filepath = self.flag_placements_and_save(who=who)
-
-        mail.Attachments.Add(filepath)
-
-        mail.Send()
+        trig_temp = TriggerTemplate(who, self.begin_date, self.end_date, filepath).send()
+        return True
 
     def pull_final_table(self, save_filepath=None, begin_date=None, end_date=None):
         if begin_date and not end_date:
