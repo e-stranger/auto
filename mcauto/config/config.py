@@ -31,5 +31,3 @@ class DataMarketURLDownload():
 
 DM_URLS = DataMarketURLDownload()
 
-my_email = "jchaunceya@gmail.com"
-my_password = "$eiko009"

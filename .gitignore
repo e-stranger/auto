@@ -11,4 +11,3 @@ __pycache__/
 github_key
 github_key.pub
 .pytest_cache/
-config/
