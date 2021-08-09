@@ -83,7 +83,7 @@ pytest-html==1.20.0
 pytest-metadata==1.8.0
 python-dateutil==2.7.5
 pytz==2018.7
-pywin32==223
+pywin32==301
 pywinpty==0.5.4
 PyYAML==3.13
 pyzmq==17.1.2
